@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import json
 import random
 import selectors
@@ -29,7 +28,8 @@ def register():
         'action': 'register',
         'ip': ANTHILL_HOST,
         'port': ANTHILL_PORT,
-        'type': 'hive'}
+        'type': 'hive'
+    }
 
     sel = selectors.DefaultSelector()
     request = create_request(action)
@@ -78,13 +78,13 @@ def game():
     lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     lsock.bind((host, port))
     lsock.listen()
-    if DEBUG: print(f'Anthill1: Listening on {(host, port)}')
+    if DEBUG: print(f'Hive1: Listening on {(host, port)}')
     lsock.setblocking(False)
     sel.register(lsock, selectors.EVENT_READ, data=None)
 
-    foobar = True
+    playing = True
     try:
-        while foobar:
+        while playing:
             events = sel.select(timeout=None)
             for key, mask in events:
                 if key.data is None:
@@ -95,8 +95,8 @@ def game():
                         message.process_events(mask)
                         process_action(message)
                     except StopIteration:
-                        print(f'Hive1: Game over')
-                        foobar = False
+                        if DEBUG: print(f'Hive1: Game over')
+                        playing = False
                     except Exception:
                         print(
                             f'Hive1: Error: Exception for {message.ipaddr}:\n'
