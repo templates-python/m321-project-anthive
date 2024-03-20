@@ -11,6 +11,7 @@ class Hive:
     xcoord: int
     ycoord: int
     foodstore: int
+    color: str
     ants: list
 
     @property
@@ -20,6 +21,7 @@ class Hive:
     @ipaddr.setter
     def ipaddr(self, value):
         self._ipaddr = value
+
     @property
     def port(self):
         return self._port
@@ -27,6 +29,7 @@ class Hive:
     @port.setter
     def port(self, value):
         self._port = value
+
     @property
     def xcoord(self):
         return self._xcoord
@@ -50,6 +53,14 @@ class Hive:
     @foodstore.setter
     def foodstore(self, value):
         self._foodstore = value
+
+    @property
+    def color(self):
+        return self._color
+
+    @color.setter
+    def color(self, value):
+        self._color = value
 
     @property
     def ants(self):

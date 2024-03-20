@@ -73,6 +73,7 @@ def create_world(hives) -> None:
     :param hives:
     :return:
     """
+    colors = ['red', 'blue', 'green', 'black', 'grey', 'cyan', 'purple', 'gold']
 
     ''' Not used in gametest
     action = {'action': 'query', 'type': 'world'}
@@ -81,12 +82,18 @@ def create_world(hives) -> None:
     message = send_request(action, host, port)
     print(message)
     '''
-    positions = [1, 1, 1, 9, 9, 9, 9, 1]  # positions for 4 hives
+    positions = [              # positions for 4 hives
+        {'x': 1, 'y': 1},
+        {'x': 1, 'y': 9},
+        {'x': 9, 'y': 9},
+        {'x': 9, 'y': 1}
+    ]
     ix = 0
     for hive in hives:
-        hive.xcoord = positions[ix]
-        hive.ycoord = positions[ix + 1]
-        ix += 2
+        hive.xcoord = positions[ix]['x']
+        hive.ycoord = positions[ix]['y']
+        hive.color = colors[ix]
+        ix += 1
 
 
 def play_round(hives):

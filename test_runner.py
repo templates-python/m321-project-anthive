@@ -10,7 +10,7 @@ def main():
     discovery_thread.start()
 
     hive01_thread = threading.Thread(
-        target=run_script, args=('', './hives/hive1.py',)
+        target=run_script, args=('', './hives/hive2.py',)
     )
     sleep(1)
     hive01_thread.start()
