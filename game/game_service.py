@@ -2,6 +2,7 @@ import json
 import random
 import selectors
 import socket
+import sys
 import traceback
 
 from ant import Ant
@@ -9,9 +10,9 @@ from hive import Hive
 from message.client_message import ClientMessage
 
 GAME_HOST = '127.0.0.1'
-GAME_PORT = 61112
+GAME_PORT = 0
 DISCOVERY_HOST = '127.0.0.1'
-DISCOVERY_PORT = 61111
+DISCOVERY_PORT = 0
 NUM_ANTS = 3
 NUM_ROUNDS = 5
 DEBUG = True
@@ -219,4 +220,10 @@ def start_connection(sel, host, port, request):
 
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) < 3:
+        print('Script needs two arguments')
+        exit(2)
+    else:
+        DISCOVERY_PORT = int(sys.argv[1])
+        GAME_PORT = int(sys.argv[2])
+        main()

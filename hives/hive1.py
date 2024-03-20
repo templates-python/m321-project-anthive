@@ -1,13 +1,14 @@
 import selectors
 import socket
+import sys
 
 from message.client_message import ClientMessage
 from message.server_message import ServerMessage
 
 ANTHILL_HOST = '127.0.0.1'
-ANTHILL_PORT = 62123 # TODO 62000 - 62999
+ANTHILL_PORT = 0
 DISCOVERY_HOST = '127.0.0.1'
-DISCOVERY_PORT = 61111
+DISCOVERY_PORT = 0
 DEBUG = True
 
 
@@ -92,4 +93,10 @@ def accept_wrapper(sel, sock):
 
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) < 3:
+        print('Script needs two arguments')
+        exit(2)
+    else:
+        DISCOVERY_PORT = int(sys.argv[1])
+        ANTHILL_PORT = int(sys.argv[2])
+        main()

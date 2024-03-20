@@ -1,5 +1,6 @@
 import selectors
 import socket
+import sys
 import traceback
 
 from message.client_message import ClientMessage
@@ -7,15 +8,17 @@ from message.server_message import ServerMessage
 from world.map import Map
 
 WORLD_HOST = '127.0.0.1'
-WORLD_PORT = 61113
+WORLD_PORT = 0
 DISCOVERY_HOST = '127.0.0.1'
-DISCOVERY_PORT = 61111
+DISCOVERY_PORT = 0
 DEBUG = True
+
 
 def main():
     register_service()
     map = Map()
     game(map)
+
 
 def register_service():
     """
@@ -65,11 +68,14 @@ def register_service():
 def create_world(hive_count):
     return []
 
+
 def show_area(xcoord, ycoord, range):
     return []
 
+
 def show_map():
     return []
+
 
 def game(map):
     """
@@ -112,6 +118,7 @@ def game(map):
     finally:
         sel.close()
 
+
 def process_action(message, map):
     """
 
@@ -135,6 +142,7 @@ def process_action(message, map):
             pass
 
         message.set_selector_events_mask('w')
+
 
 def create_request(action_item):
     """
@@ -168,8 +176,6 @@ def start_connection(sel, host, port, request):
     sel.register(sock, events, data=message)
 
 
-
-
 def accept_wrapper(sel, sock):
     """
     Wrapper for the recieved messages
@@ -183,5 +189,12 @@ def accept_wrapper(sel, sock):
     message = ServerMessage(sel, conn, addr)
     sel.register(conn, selectors.EVENT_READ, data=message)
 
+
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) < 3:
+        print('Script needs two arguments')
+        exit(2)
+    else:
+        DISCOVERY_PORT = int(sys.argv[1])
+        WORLD_PORT = int(sys.argv[2])
+        main()
