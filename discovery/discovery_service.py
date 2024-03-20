@@ -1,12 +1,13 @@
 import selectors
 import socket
+import sys
 import traceback
 
 from message.server_message import ServerMessage
 from services import Services
 
 HOST = '127.0.0.1'
-PORT = 61111
+PORT = 0
 DEBUG = True
 
 
@@ -80,4 +81,9 @@ def accept_wrapper(sel, sock):
 
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) < 2:
+        print ('Script needs one argument {port}')
+        exit(2)
+    else:
+        PORT = int(sys.argv[1])
+        main()

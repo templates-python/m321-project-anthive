@@ -2,6 +2,7 @@ import json
 import random
 import selectors
 import socket
+import sys
 import traceback
 
 from ant import Ant
@@ -9,9 +10,9 @@ from hive import Hive
 from message.client_message import ClientMessage
 
 GAME_HOST = '127.0.0.1'
-GAME_PORT = 61112
+GAME_PORT = 0
 DISCOVERY_HOST = '127.0.0.1'
-DISCOVERY_PORT = 61111
+DISCOVERY_PORT = 0
 NUM_ANTS = 3
 NUM_ROUNDS = 5
 DEBUG = True
@@ -73,6 +74,7 @@ def create_world(hives) -> None:
     :param hives:
     :return:
     """
+    colors = ['red', 'blue', 'green', 'black', 'grey', 'cyan', 'purple', 'gold']
 
     ''' Not used in gametest
     action = {'action': 'query', 'type': 'world'}
@@ -81,12 +83,18 @@ def create_world(hives) -> None:
     message = send_request(action, host, port)
     print(message)
     '''
-    positions = [1, 1, 1, 9, 9, 9, 9, 1]  # positions for 4 hives
+    positions = [              # positions for 4 hives
+        {'x': 1, 'y': 1},
+        {'x': 1, 'y': 9},
+        {'x': 9, 'y': 9},
+        {'x': 9, 'y': 1}
+    ]
     ix = 0
     for hive in hives:
-        hive.xcoord = positions[ix]
-        hive.ycoord = positions[ix + 1]
-        ix += 2
+        hive.xcoord = positions[ix]['x']
+        hive.ycoord = positions[ix]['y']
+        hive.color = colors[ix]
+        ix += 1
 
 
 def play_round(hives):
@@ -212,4 +220,10 @@ def start_connection(sel, host, port, request):
 
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) < 3:
+        print('Script needs two arguments')
+        exit(2)
+    else:
+        DISCOVERY_PORT = int(sys.argv[1])
+        GAME_PORT = int(sys.argv[2])
+        main()

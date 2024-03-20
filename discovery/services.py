@@ -50,7 +50,6 @@ class Services:
         results = []
         for index, service in enumerate(self._service_list):
             age = (datetime.now() - service['heartbeat']).total_seconds()
-            print(f'Age: {age}')
             if age > 600:
                 self._service_list.pop(index)
             elif service['type'] == type:
