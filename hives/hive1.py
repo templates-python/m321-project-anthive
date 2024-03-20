@@ -3,9 +3,10 @@ import socket
 
 from message.client_message import ClientMessage
 from message.server_message import ServerMessage
+from discovery.services import Services
 
 ANTHILL_HOST = '127.0.0.1'
-ANTHILL_PORT = 62123 # TODO 62000 - 62999
+ANTHILL_PORT = 62169 # 62000 - 62999
 DISCOVERY_HOST = '127.0.0.1'
 DISCOVERY_PORT = 61111
 DEBUG = True
@@ -21,8 +22,32 @@ def register():
     register this anthill service with the discovery service
     :return: None
     """
-    # TODO
-    pass
+    sel = selectors.DefaultSelector()
+    item = {'action': 'register', 'ip': ANTHILL_HOST, 'port': ANTHILL_PORT, 'type': 'hive'}
+    request = create_request(item)
+    start_connection(sel, DISCOVERY_HOST, DISCOVERY_PORT, request)
+
+    try:
+        while True:
+            events = sel.select(timeout=1)
+            for key, mask in events:
+                message = key.data
+                try:
+                    message.process_events(mask)
+                except Exception:
+                    print(
+                        f'Main: Error: Exception for {message.ipaddr}:\n'
+                        #f'{traceback.format_exc()}'
+                    )
+                    message._close()
+            # Check for a socket being monitored to continue.
+            if not sel.get_map():
+                break
+    except KeyboardInterrupt:
+        print('Caught keyboard interrupt, exiting')
+    finally:
+        sel.close()
+    print(message)
 
 
 def game():
@@ -30,7 +55,39 @@ def game():
     process the rounds of the game
     :return:
     """
-    # TODO
+    sel = selectors.DefaultSelector()
+    services = Services()
+
+    lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # Avoid bind() exception: OSError: [Errno 48] Address already in use
+    lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    lsock.bind((ANTHILL_HOST, ANTHILL_PORT))
+    lsock.listen()
+    print(f'Listening on {(ANTHILL_HOST, ANTHILL_PORT)}')
+    lsock.setblocking(False)
+    sel.register(lsock, selectors.EVENT_READ, data=None)
+
+    try:
+        while True:
+            events = sel.select(timeout=None)
+            for key, mask in events:
+                if key.data is None:
+                    accept_wrapper(sel, key.fileobj)
+                else:
+                    message = key.data
+                    try:
+                        message.process_events(mask)
+                        process_action(message, services)
+                    except Exception:
+                        print(
+                            f'Main: Error: Exception for {message.ipaddr}:\n'
+                            #f'{traceback.format_exc()}'
+                        )
+                        message._close()
+    except KeyboardInterrupt:
+        print('Caught keyboard interrupt, exiting')
+    finally:
+        sel.close()
 
 def process_action(message):
     """
@@ -38,8 +95,17 @@ def process_action(message):
     :param message:
     :return:
     """
-    # TODO
-    pass
+    if message.event == 'READ':
+        action = message.request['action']
+
+        if action == 'register':
+            message.response = Services.register(message.request['type'], message.request['ip'],message.request['port'])
+        elif action == 'heartbeat':
+            message.response = Services.heartbeat(message.request['uuid'])
+        elif action == 'query':
+            message.response = Services.query(message.request['type'])
+        else:
+            message.response = 'TODO Repsonse from the method'
 
 
 
