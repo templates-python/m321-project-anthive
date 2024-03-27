@@ -86,7 +86,7 @@ class Map:
             elif last_hive[0] - distance > self._width - 4 and last_hive[1] + distance < self._height - 4:
                 remainder = last_hive[0] + distance - (self._height - 3)
                 last_hive[0] = self._height - 3
-                last_hive[1] = last_hive[1] - distance
+                last_hive[1] = last_hive[1] - remainder
                 print("4")
 
         # Calculate the starting position for the food
