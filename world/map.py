@@ -1,5 +1,6 @@
 from world.field import Field
 from game.hive import Hive
+import random
 import json
 
 
@@ -42,57 +43,69 @@ class Map:
 
         for x in range(self._width):
             self.fields[x][0] = Field("water", 0, 0, "")
-            self.fields[x][1] = Field("water", 0, 0, "")
             self.fields[x][self._height - 1] = Field("water", 0, 0, "")
-            self.fields[x][self._height - 2] = Field("water", 0, 0, "")
         for y in range(self._height):
             self.fields[0][y] = Field("water", 0, 0, "")
-            self.fields[1][y] = Field("water", 0, 0, "")
             self.fields[self._width - 1][y] = Field("water", 0, 0, "")
-            self.fields[self._width - 2][y] = Field("water", 0, 0, "")
 
         hive_positions = []
         hive_positions_dict = []
-        circumference = self._width * 2 + self._height - 2 * 2
+
+        circumference = (self._width - 4) * 2 + (self._height - 6) * 2
         distance = circumference // hive_count
-        # Need some explanation here
+
+        # place hives:
+
+        last_hive = [2, 2]  # self.fields[5][0] --> x: 5, y: 0
         for i in range(hive_count):
-            x = 0
-            y = 0
-            if i == 0:
-                x = 2
-                y = 2
-            elif i == 1:
-                x = 2
-                y = self._height - 3
-            elif i == 2:
-                x = self._width - 3
-                y = self._height - 3
-            elif i == 3:
-                x = self._width - 3
-                y = 2
-            else:
-                if i % 4 == 0:
-                    x = 2
-                    y = 2 + distance * (i // 4)
-                elif i % 4 == 1:
-                    x = 2 + distance * (i // 4)
-                    y = self._height - 3
-                elif i % 4 == 2:
-                    x = self._width - 3
-                    y = self._height - 3 - distance * (i // 4)
-                elif i % 4 == 3:
-                    x = self._width - 3 - distance * (i // 4)
-                    y = 2
+            x, y = last_hive[0], last_hive[1]
+
+            print("Itteration: ", i)
+            print("X: ", last_hive[0], "Y: ", last_hive[1])
+
             hive_positions.append((x, y))
+            print(hive_positions)
             self.fields[x][y] = Field("hive", 0, 0, "")
 
-        # Place hives on the map
-        for x, y in hive_positions:
-            self.fields[x][y] = Field("hive", 0, 0, "")
+            if last_hive[0] + distance < self._width - 4:
+                last_hive[0] = last_hive[0] + distance
+                print("1")
 
-        # Place food in the middle of the map
-        self.fields[map_size // 2][map_size // 2] = Field("food", 99, 0, "")
+            elif last_hive[0] + distance > self._width - 4 and last_hive[1] + distance < self._height - 4:
+                remainder = last_hive[0] + distance - (self._width - 3)
+                last_hive[0] = self._width - 3
+                last_hive[1] = last_hive[1] + remainder
+                print("2")
+
+            elif last_hive[1] + distance > self._height - 4 and last_hive[0] - distance < self._width - 4:
+                remainder = last_hive[1] + distance - (self._height - 3)
+                last_hive[1] = self._height - 3
+                last_hive[0] = last_hive[0] - remainder
+                print("3")
+
+            elif last_hive[0] - distance > self._width - 4 and last_hive[1] + distance < self._height - 4:
+                remainder = last_hive[0] + distance - (self._height - 3)
+                last_hive[0] = self._height - 3
+                last_hive[1] = last_hive[1] - distance
+                print("4")
+
+        # Calculate the starting position for the food
+        if hive_count < 9:
+            food = int(hive_count / 2)
+        else:
+            food = int(hive_count / 3)
+        start_x = (self._width - food) // 2
+        start_y = (self._height - food) // 2
+
+        # Place food in the middle of the map for each hive in a rectangular pattern
+        for i in range(food):
+            for j in range(food):
+                if j == 0 or j == food - 1:
+                    self.fields[start_x + i][start_y + j] = Field("food", random.randint(1, 99), 0, "")
+                elif i == 0:
+                    self.fields[start_x][start_y + j] = Field("food", random.randint(1, 99), 0, "")
+                elif i == food - 1:
+                    self.fields[start_x + i][start_y + j] = Field("food", random.randint(1, 99), 0, "")
 
         for x, y in hive_positions:
             # takes x, y values from hive_positions and appends them as dictionary into hive_positions_dict
@@ -168,20 +181,17 @@ class Map:
         return json.dumps(surroundings)
 
 
-
-
 if __name__ == '__main__':
     map = Map()
-    playing_field = map.create_world(5)
+    playing_field = map.create_world(6)
     # Hive placement overflows
     print('Hive locations: \n', playing_field)
     print("----------------------------")
 
-    print('5x5 around hive (2, 11): \n', map.show_area(2, 11, "red", 2))
+    print('5x5 around hive (2, 11): \n', map.show_area(2, 2, "red", 2))
     print("----------------------------")
 
     map_area = json.loads(map.show_map())  # Parse the JSON array into a Python list
     chunk_size = map.width
     for i in range(0, len(map_area), chunk_size):
         print(map_area[i:i + chunk_size])
-
